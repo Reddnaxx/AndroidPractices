@@ -38,7 +38,6 @@ import com.example.urfuandroidpractice.R
 import com.example.urfuandroidpractice.listWithDetails.data.mock.AnimeData
 import com.example.urfuandroidpractice.listWithDetails.domain.entity.AnimeShortEntity
 import com.example.urfuandroidpractice.listWithDetails.presentation.viewModel.AnimeListViewModel
-import com.example.urfuandroidpractice.ui.components.BottomNavBar
 import com.example.urfuandroidpractice.ui.theme.Spacing
 import com.github.terrakok.modo.Screen
 import com.github.terrakok.modo.ScreenKey
@@ -71,9 +70,13 @@ class AnimeListScreen(
                     modifier = Modifier
                         .background(MaterialTheme.colorScheme.primary)
                         .fillMaxWidth()
-                        .padding(24.dp),
+                        .padding(horizontal = 24.dp)
+                        .padding(bottom = 12.dp),
                 ) {
                     SearchBar(
+                        colors = SearchBarDefaults.colors(
+                            containerColor = MaterialTheme.colorScheme.surface
+                        ),
                         inputField = {
                             SearchBarDefaults.InputField(
                                 query = state.query,
@@ -94,13 +97,7 @@ class AnimeListScreen(
                         onExpandedChange = { }
                     ) {}
                 }
-            },
-            bottomBar = {
-                BottomNavBar(
-                    selectedTabPos = 1,
-                    onTabClick = { },
-                )
-            },
+            }
         ) { innerPadding ->
             ListScreenContent(
                 modifier = Modifier.padding(innerPadding),

@@ -2,6 +2,7 @@ import com.example.urfuandroidpractice.listWithDetails.data.repository.AnimeRepo
 import com.example.urfuandroidpractice.listWithDetails.domain.repository.IAnimeRepository
 import com.example.urfuandroidpractice.listWithDetails.presentation.viewModel.AnimeDetailsViewModel
 import com.example.urfuandroidpractice.listWithDetails.presentation.viewModel.AnimeListViewModel
+import com.example.urfuandroidpractice.listWithDetails.presentation.viewModel.NavigationViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
@@ -10,4 +11,5 @@ val rootModule = module {
 
     viewModel { AnimeListViewModel(get(), it.get()) }
     viewModel { AnimeDetailsViewModel(get(), it.get(), it.get()) }
+    viewModel { NavigationViewModel(get()) }
 }
