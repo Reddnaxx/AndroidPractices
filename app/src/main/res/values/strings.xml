@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">UrFU Android Practice</string>
+    <string name="released">Вышел</string>
+    <string name="ongoing">Онгоинг</string>
+    <string name="tv">TV Сериал</string>
+    <string name="movie">Фильм</string>
+    <string name="base_url">https://shikimori.one</string>
 </resources>
