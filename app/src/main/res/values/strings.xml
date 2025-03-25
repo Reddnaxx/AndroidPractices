@@ -5,4 +5,10 @@
     <string name="tv">TV Сериал</string>
     <string name="movie">Фильм</string>
     <string name="base_url">https://shikimori.one</string>
+    <string name="desc_back">Back</string>
+    <string name="anime">Аниме</string>
+    <string name="desc">Описание</string>
+    <string name="your_score">Ваша оценка: %1$s</string>
+    <string name="pages_home">Главная</string>
+    <string name="pages_list">Список</string>
 </resources>

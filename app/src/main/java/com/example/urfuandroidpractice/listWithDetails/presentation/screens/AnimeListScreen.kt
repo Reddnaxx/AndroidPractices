@@ -32,9 +32,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.example.urfuandroidpractice.R
+import com.example.urfuandroidpractice.listWithDetails.data.mappers.DateMapper
 import com.example.urfuandroidpractice.listWithDetails.data.mock.AnimeData
 import com.example.urfuandroidpractice.listWithDetails.domain.entity.AnimeShortEntity
 import com.example.urfuandroidpractice.listWithDetails.presentation.viewModel.AnimeListViewModel
@@ -46,9 +46,7 @@ import com.github.terrakok.modo.stack.LocalStackNavigation
 import kotlinx.parcelize.Parcelize
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
-import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.util.Locale
 
 
 @Parcelize
@@ -68,10 +66,10 @@ class AnimeListScreen(
             topBar = {
                 Box(
                     modifier = Modifier
-                        .background(MaterialTheme.colorScheme.primary)
                         .fillMaxWidth()
-                        .padding(horizontal = 24.dp)
-                        .padding(bottom = 12.dp),
+                        .background(MaterialTheme.colorScheme.primary)
+                        .padding(horizontal = Spacing.large)
+                        .padding(bottom = Spacing.medium),
                 ) {
                     SearchBar(
                         colors = SearchBarDefaults.colors(
@@ -135,8 +133,7 @@ private fun AnimeListItem(
     onClick: (id: Int) -> Unit
 ) {
     val context = LocalContext.current
-    val date = LocalDate.parse(anime.airedOn, DateTimeFormatter.ISO_DATE)
-    val formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale("ru"))
+    val date = DateMapper.toLocalString(anime.airedOn, DateTimeFormatter.ISO_DATE, "dd MMMM yyyy")
 
     Row(
         modifier = modifier
@@ -168,7 +165,7 @@ private fun AnimeListItem(
                 style = MaterialTheme.typography.bodyMedium
             )
             Text(
-                text = date.format(formatter),
+                text = date,
                 style = MaterialTheme.typography.bodySmall
             )
         }

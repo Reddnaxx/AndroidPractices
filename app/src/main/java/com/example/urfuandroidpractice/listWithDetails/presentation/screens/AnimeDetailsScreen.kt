@@ -41,6 +41,7 @@ import com.example.urfuandroidpractice.listWithDetails.presentation.state.AnimeD
 import com.example.urfuandroidpractice.listWithDetails.presentation.viewModel.AnimeDetailsViewModel
 import com.example.urfuandroidpractice.ui.components.RatingBar
 import com.example.urfuandroidpractice.ui.components.TitledColumn
+import com.example.urfuandroidpractice.ui.theme.Spacing
 import com.github.terrakok.modo.Screen
 import com.github.terrakok.modo.ScreenKey
 import com.github.terrakok.modo.generateScreenKey
@@ -71,16 +72,27 @@ class AnimeDetailsScreen(
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 tint = MaterialTheme.colorScheme.onPrimary,
-                                contentDescription = "Back"
+                                contentDescription = stringResource(R.string.desc_back)
                             )
                         }
                     },
-                    title = { Text("Аниме") },
+                    title = { Text(stringResource(R.string.anime)) },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.primary,
                         titleContentColor = MaterialTheme.colorScheme.onPrimary
                     )
                 )
+            },
+            floatingActionButton = {
+                FloatingActionButton(
+                    onClick = { },
+                ) {
+                    Icon(
+                        painterResource(R.drawable.comment),
+                        modifier = Modifier.size(32.dp),
+                        contentDescription = "Write Comment"
+                    )
+                }
             }
         ) { innerPadding ->
             Box(
@@ -93,19 +105,6 @@ class AnimeDetailsScreen(
                     onRatingChanged = { value -> viewModel.onRatingChanged(value) },
                     modifier = Modifier.verticalScroll(ScrollState(0))
                 )
-
-                FloatingActionButton(
-                    onClick = { },
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(16.dp)
-                ) {
-                    Icon(
-                        painterResource(R.drawable.comment),
-                        modifier = Modifier.size(32.dp),
-                        contentDescription = "Write Comment"
-                    )
-                }
             }
         }
     }
@@ -127,7 +126,7 @@ private fun AnimeDetailsContent(
             "${anime.russian} / ${anime.name}",
             style = MaterialTheme.typography.titleLarge
         )
-        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.medium)) {
             AsyncImage(
                 model = stringResource(R.string.base_url) + anime.image.original,
                 contentDescription = anime.name,
@@ -147,7 +146,7 @@ private fun AnimeDetailsContent(
 
 @Composable
 private fun AnimeDescription(anime: AnimeFullEntity) {
-    TitledColumn(title = "Описание") {
+    TitledColumn(title = stringResource(R.string.desc)) {
         Text(
             anime.description,
             style = MaterialTheme.typography.bodyMedium
@@ -174,7 +173,7 @@ private fun AnimeRating(
 
             if (state.isUserScoreVisible) {
                 Text(
-                    text = "Ваша оценка: ${state.userScore}",
+                    text = stringResource(R.string.your_score, state.userScore),
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(4.dp)
                 )
