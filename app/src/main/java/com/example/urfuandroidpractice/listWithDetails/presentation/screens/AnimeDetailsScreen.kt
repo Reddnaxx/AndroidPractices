@@ -22,6 +22,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,57 +65,67 @@ class AnimeDetailsScreen(
         val viewModel = koinViewModel<AnimeDetailsViewModel> { parametersOf(navigation, id) }
         val state = viewModel.viewState
 
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    navigationIcon = {
-                        IconButton(onClick = { viewModel.back() }) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                tint = MaterialTheme.colorScheme.onPrimary,
-                                contentDescription = stringResource(R.string.desc_back)
-                            )
-                        }
-                    },
-                    title = { Text(stringResource(R.string.anime)) },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        titleContentColor = MaterialTheme.colorScheme.onPrimary
-                    )
+        Scaffold(topBar = {
+            TopAppBar(
+                navigationIcon = {
+                    IconButton(onClick = { viewModel.back() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            contentDescription = stringResource(R.string.desc_back)
+                        )
+                    }
+                },
+                title = { Text(stringResource(R.string.anime)) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary
                 )
-            },
-            floatingActionButton = {
-                FloatingActionButton(
-                    onClick = { },
-                ) {
-                    Icon(
-                        painterResource(R.drawable.comment),
-                        modifier = Modifier.size(32.dp),
-                        contentDescription = "Write Comment"
+            )
+        }, floatingActionButton = {
+            FloatingActionButton(
+                onClick = { },
+            ) {
+                Icon(
+                    painterResource(R.drawable.comment),
+                    modifier = Modifier.size(32.dp),
+                    contentDescription = "Write Comment"
+                )
+            }
+        }) { innerPadding ->
+            PullToRefreshBox(
+                isRefreshing = state.isLoading,
+                onRefresh = { viewModel.onRefresh() },
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+            ) {
+                when {
+                    state.error.isNullOrEmpty().not() -> ErrorScreen(state.error!!)
+                    else -> AnimeDetailsContent(
+                        state = state,
+                        onRatingChanged = { viewModel.onRatingChanged(it) },
+                        modifier = Modifier.verticalScroll(ScrollState(0))
                     )
                 }
-            }
-        ) { innerPadding ->
-            Box(
-                modifier = Modifier
-                    .padding(innerPadding)
-                    .fillMaxSize()
-            ) {
-                AnimeDetailsContent(
-                    state,
-                    onRatingChanged = { value -> viewModel.onRatingChanged(value) },
-                    modifier = Modifier.verticalScroll(ScrollState(0))
-                )
             }
         }
     }
 }
 
 @Composable
+private fun ErrorScreen(error: String) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Text("Error: $error")
+    }
+}
+
+@Composable
 private fun AnimeDetailsContent(
-    state: AnimeDetailsScreenState,
-    onRatingChanged: (Float) -> Unit,
-    modifier: Modifier = Modifier
+    state: AnimeDetailsScreenState, onRatingChanged: (Float) -> Unit, modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val anime = state.anime ?: return Box(modifier = modifier) {
@@ -123,8 +134,7 @@ private fun AnimeDetailsContent(
 
     Column(modifier = modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Text(
-            "${anime.russian} / ${anime.name}",
-            style = MaterialTheme.typography.titleLarge
+            "${anime.russian} / ${anime.name}", style = MaterialTheme.typography.titleLarge
         )
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.medium)) {
             AsyncImage(
@@ -140,24 +150,24 @@ private fun AnimeDetailsContent(
 
         AnimeRating(state, onRatingChanged)
 
-        AnimeDescription(anime)
+        anime.description?.let {
+            AnimeDescription(it)
+        }
     }
 }
 
 @Composable
-private fun AnimeDescription(anime: AnimeFullEntity) {
+private fun AnimeDescription(text: String) {
     TitledColumn(title = stringResource(R.string.desc)) {
         Text(
-            anime.description,
-            style = MaterialTheme.typography.bodyMedium
+            text, style = MaterialTheme.typography.bodyMedium
         )
     }
 }
 
 @Composable
 private fun AnimeRating(
-    state: AnimeDetailsScreenState,
-    onRatingChanged: (Float) -> Unit
+    state: AnimeDetailsScreenState, onRatingChanged: (Float) -> Unit
 ) {
     TitledColumn(
         title = "Поставьте оценку",
@@ -188,13 +198,17 @@ private fun AnimeInfo(
     anime: AnimeFullEntity,
     context: Context,
 ) {
+
     TitledColumn(title = "Информация", modifier = modifier) {
-        AnimeInformationRow("Тип", anime.kind.getString(context))
-        AnimeInformationRow("Статус", anime.status.getString(context))
+        AnimeInformationRow("Тип", anime.kind?.getString(context) ?: "TV Сериал")
+        AnimeInformationRow("Статус", anime.status?.getString(context) ?: "Вышло")
         AnimeInformationRow("Эпизоды", "${anime.episodesAired} / ${anime.episodes}")
         AnimeInformationRow("Длительность", "${anime.duration} мин")
         AnimeInformationRow("Рейтинг", anime.rating.uppercase())
-        AnimeInformationRow("Жанры", anime.genres.joinToString(", "))
+
+        if (anime.genres.isNotEmpty()) {
+            AnimeInformationRow("Жанры", anime.genres.joinToString { it.russian })
+        }
     }
 }
 
@@ -217,13 +231,11 @@ fun AnimeInformationRow(name: String, value: String) {
 @Composable
 @Preview(showBackground = true)
 private fun AnimeDetailsContentPreview() {
-    AnimeDetailsContent(
-        state = object : AnimeDetailsScreenState {
-            override val anime: AnimeFullEntity = AnimeData.animeFull[0]
-            override val userScore: Float = 0f
-            override val isUserScoreVisible: Boolean = true
-        },
-        onRatingChanged = {},
-        modifier = Modifier.fillMaxSize()
-    )
+    AnimeDetailsContent(state = object : AnimeDetailsScreenState {
+        override val anime: AnimeFullEntity = AnimeData.animeFull[0]
+        override val userScore: Float = 0f
+        override val isUserScoreVisible: Boolean = true
+        override val isLoading: Boolean = false
+        override val error: String? = null
+    }, onRatingChanged = { })
 }

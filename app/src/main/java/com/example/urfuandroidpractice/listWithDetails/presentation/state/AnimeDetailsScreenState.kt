@@ -6,4 +6,6 @@ interface AnimeDetailsScreenState {
     val anime: AnimeFullEntity?
     val userScore: Float
     val isUserScoreVisible: Boolean
+    val isLoading: Boolean
+    val error: String?
 }
