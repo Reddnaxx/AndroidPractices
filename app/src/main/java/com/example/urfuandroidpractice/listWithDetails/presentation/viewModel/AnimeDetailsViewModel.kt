@@ -13,6 +13,7 @@ import com.github.terrakok.modo.stack.StackNavContainer
 import com.github.terrakok.modo.stack.back
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
@@ -32,11 +33,11 @@ class AnimeDetailsViewModel(
     private suspend fun loadAnime() {
         repository.getById(id)
             .onStart { mutableState.isLoading = true }
+            .onCompletion { mutableState.isLoading = false }
             .catch { error -> mutableState.error = error.message }
             .shareIn(viewModelScope, SharingStarted.WhileSubscribed(5000), replay = 1)
             .collect {
                 mutableState.anime = it
-                mutableState.isLoading = false
             }
     }
 
