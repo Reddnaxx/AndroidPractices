@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -17,19 +18,29 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.sharp.Settings
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SearchBar
-import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,6 +50,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.example.urfuandroidpractice.R
 import com.example.urfuandroidpractice.listWithDetails.data.mappers.DateMapper
@@ -69,31 +81,85 @@ class AnimeListScreen(
         val viewModel = koinViewModel<AnimeListViewModel> { parametersOf(navigation) }
         val state = viewModel.viewState
 
+        var isDropdownExpanded by remember { mutableStateOf(false) }
+
         Scaffold(modifier = modifier, topBar = {
-            Box(
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.primary)
-                    .padding(horizontal = Spacing.large)
-                    .padding(bottom = Spacing.medium),
+                    .padding(horizontal = Spacing.large, vertical = Spacing.small),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                SearchBar(colors = SearchBarDefaults.colors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                ), inputField = {
-                    SearchBarDefaults.InputField(
-                        query = state.query.collectAsState(initial = "").value,
-                        onQueryChange = { viewModel.onQueryChanged(it) },
-                        placeholder = { Text("Поиск") },
-                        onSearch = { },
-                        expanded = false,
-                        onExpandedChange = {},
-                        leadingIcon = {
-                            Icon(
-                                Icons.Default.Search, contentDescription = null
+                TextField(
+                    value = state.query.collectAsState(initial = "").value,
+                    onValueChange = { viewModel.onQueryChanged(it) },
+                    placeholder = { Text("Поиск") },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.Search, contentDescription = null
+                        )
+                    },
+                    modifier = Modifier
+                        .clip(MaterialTheme.shapes.extraLarge)
+                        .background(MaterialTheme.colorScheme.surface)
+                        .weight(1f)
+                )
+
+                Box {
+                    IconButton(
+                        onClick = { isDropdownExpanded = !isDropdownExpanded },
+                        modifier = Modifier
+                            .padding(Spacing.small),
+                        colors = IconButtonDefaults.iconButtonColors(
+                            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Sharp.Settings,
+                            contentDescription = null
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = isDropdownExpanded,
+                        onDismissRequest = { isDropdownExpanded = false },
+                        modifier = Modifier.height(600.dp)
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Очистить фильтр") },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Clear,
+                                    contentDescription = ""
+                                )
+                            },
+                            onClick = {
+                                isDropdownExpanded = false
+                                viewModel.onGenreSelected(null)
+                            }
+                        )
+
+                        state.genres.forEach { genre ->
+                            DropdownMenuItem(
+                                text = { Text(genre.russian) },
+                                leadingIcon = {
+                                    if (genre == state.selectedGenre) {
+                                        Icon(
+                                            imageVector = Icons.Default.Check,
+                                            contentDescription = ""
+                                        )
+                                    }
+                                },
+                                onClick = {
+                                    isDropdownExpanded = false
+                                    viewModel.onGenreSelected(genre)
+                                }
                             )
-                        },
-                    )
-                }, expanded = false, onExpandedChange = { }) {}
+                        }
+                    }
+                }
             }
         }) { innerPadding ->
             PullToRefreshBox(
@@ -207,11 +273,9 @@ private fun AnimeListItem(
                 style = MaterialTheme.typography.bodyMedium
             )
 
-            date?.let {
-                Text(
-                    text = it, style = MaterialTheme.typography.bodyMedium
-                )
-            }
+            Text(
+                text = date, style = MaterialTheme.typography.bodyMedium
+            )
         }
     }
 }

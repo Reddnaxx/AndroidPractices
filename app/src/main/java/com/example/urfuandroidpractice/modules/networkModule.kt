@@ -2,7 +2,7 @@ package com.example.urfuandroidpractice.modules
 
 import android.content.Context
 import com.chuckerteam.chucker.api.ChuckerInterceptor
-import com.example.urfuandroidpractice.listWithDetails.data.api.AnimeService
+import com.example.urfuandroidpractice.listWithDetails.data.api.AnimeApi
 import okhttp3.OkHttpClient
 import org.koin.dsl.module
 import retrofit2.Retrofit
@@ -30,6 +30,6 @@ private fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
         .build()
 }
 
-private fun provideAnimeService(retrofit: Retrofit): AnimeService {
-    return AnimeService.create(retrofit)
+private fun provideAnimeService(retrofit: Retrofit): AnimeApi {
+    return AnimeApi.create(retrofit)
 }

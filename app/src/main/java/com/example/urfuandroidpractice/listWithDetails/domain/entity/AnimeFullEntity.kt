@@ -19,9 +19,3 @@ data class AnimeFullEntity(
     @SerializedName("description") val description: String?,
     @SerializedName("genres") val genres: List<AnimeGenre>
 )
-
-data class AnimeGenre(
-    @SerializedName("id") val id: Int,
-    @SerializedName("name") val name: String,
-    @SerializedName("russian") val russian: String,
-)
