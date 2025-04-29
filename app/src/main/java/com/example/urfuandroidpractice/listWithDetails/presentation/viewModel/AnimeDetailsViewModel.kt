@@ -6,7 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.urfuandroidpractice.listWithDetails.domain.entity.AnimeFullEntity
+import com.example.urfuandroidpractice.listWithDetails.domain.models.AnimeFullModel
 import com.example.urfuandroidpractice.listWithDetails.domain.repository.IAnimeRepository
 import com.example.urfuandroidpractice.listWithDetails.presentation.state.AnimeDetailsScreenState
 import com.github.terrakok.modo.stack.StackNavContainer
@@ -56,7 +56,7 @@ class AnimeDetailsViewModel(
     }
 
     private class MutableAnimeDetailsState : AnimeDetailsScreenState {
-        override var anime: AnimeFullEntity? by mutableStateOf(null)
+        override var anime: AnimeFullModel? by mutableStateOf(null)
         override var userScore: Float by mutableFloatStateOf(0f)
         override val isUserScoreVisible: Boolean get() = userScore != 0f
         override var isLoading: Boolean by mutableStateOf(false)

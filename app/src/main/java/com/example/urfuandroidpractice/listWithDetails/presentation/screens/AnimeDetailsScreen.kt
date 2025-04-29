@@ -37,7 +37,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.example.urfuandroidpractice.R
 import com.example.urfuandroidpractice.listWithDetails.data.mock.AnimeData
-import com.example.urfuandroidpractice.listWithDetails.domain.entity.AnimeFullEntity
+import com.example.urfuandroidpractice.listWithDetails.domain.models.AnimeFullModel
 import com.example.urfuandroidpractice.listWithDetails.presentation.state.AnimeDetailsScreenState
 import com.example.urfuandroidpractice.listWithDetails.presentation.viewModel.AnimeDetailsViewModel
 import com.example.urfuandroidpractice.ui.components.RatingBar
@@ -100,14 +100,13 @@ class AnimeDetailsScreen(
                     .fillMaxSize()
                     .padding(innerPadding)
             ) {
-                when {
-                    state.error.isNullOrEmpty().not() -> ErrorScreen(state.error!!)
-                    else -> AnimeDetailsContent(
-                        state = state,
-                        onRatingChanged = { viewModel.onRatingChanged(it) },
-                        modifier = Modifier.verticalScroll(ScrollState(0))
-                    )
-                }
+                state.error?.let {
+                    ErrorScreen(it)
+                } ?: AnimeDetailsContent(
+                    state = state,
+                    onRatingChanged = { viewModel.onRatingChanged(it) },
+                    modifier = Modifier.verticalScroll(ScrollState(0))
+                )
             }
         }
     }
@@ -195,7 +194,7 @@ private fun AnimeRating(
 @Composable
 private fun AnimeInfo(
     modifier: Modifier = Modifier,
-    anime: AnimeFullEntity,
+    anime: AnimeFullModel,
     context: Context,
 ) {
 
@@ -232,7 +231,7 @@ fun AnimeInformationRow(name: String, value: String) {
 @Preview(showBackground = true)
 private fun AnimeDetailsContentPreview() {
     AnimeDetailsContent(state = object : AnimeDetailsScreenState {
-        override val anime: AnimeFullEntity = AnimeData.animeFull[0]
+        override val anime: AnimeFullModel = AnimeData.animeFull[0]
         override val userScore: Float = 0f
         override val isUserScoreVisible: Boolean = true
         override val isLoading: Boolean = false

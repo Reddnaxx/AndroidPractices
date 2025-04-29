@@ -1,6 +1,7 @@
 package com.example.urfuandroidpractice
 
 import android.app.Application
+import com.example.urfuandroidpractice.modules.localModule
 import com.example.urfuandroidpractice.modules.networkModule
 import com.example.urfuandroidpractice.modules.rootModule
 import org.koin.android.ext.koin.androidContext
@@ -15,7 +16,7 @@ class App : Application() {
         startKoin {
             androidLogger()
             androidContext(this@App)
-            modules(listOf(rootModule, networkModule))
+            modules(rootModule, networkModule, localModule)
         }
     }
 }

@@ -1,12 +1,12 @@
-package com.example.urfuandroidpractice.listWithDetails.domain.entity
+package com.example.urfuandroidpractice.listWithDetails.domain.models
 
 import android.content.Context
 import androidx.annotation.StringRes
 import com.example.urfuandroidpractice.R
 
-enum class AnimeStatus(@StringRes val stringRes: Int) {
-    RELEASED(R.string.released),
-    ONGOING(R.string.ongoing);
+enum class AnimeKind(@StringRes val stringRes: Int) {
+    TV(R.string.tv),
+    MOVIE(R.string.movie);
 
     fun getString(context: Context): String {
         return context.getString(stringRes)

@@ -1,4 +1,4 @@
-package com.example.urfuandroidpractice.listWithDetails.domain.entity
+package com.example.urfuandroidpractice.listWithDetails.domain.models
 
 import com.google.gson.annotations.SerializedName
 

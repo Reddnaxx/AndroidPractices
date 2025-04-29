@@ -1,8 +1,8 @@
-package com.example.urfuandroidpractice.listWithDetails.domain.entity
+package com.example.urfuandroidpractice.listWithDetails.domain.models
 
 import com.google.gson.annotations.SerializedName
 
-data class AnimeFullEntity(
+data class AnimeFullModel(
     @SerializedName("id") val id: Int,
     @SerializedName("name") val name: String,
     @SerializedName("russian") val russian: String,

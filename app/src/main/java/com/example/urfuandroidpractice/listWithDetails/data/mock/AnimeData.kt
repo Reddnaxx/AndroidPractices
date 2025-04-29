@@ -1,15 +1,15 @@
 package com.example.urfuandroidpractice.listWithDetails.data.mock
 
-import com.example.urfuandroidpractice.listWithDetails.domain.entity.AnimeFullEntity
-import com.example.urfuandroidpractice.listWithDetails.domain.entity.AnimeGenre
-import com.example.urfuandroidpractice.listWithDetails.domain.entity.AnimeKind
-import com.example.urfuandroidpractice.listWithDetails.domain.entity.AnimeShortEntity
-import com.example.urfuandroidpractice.listWithDetails.domain.entity.AnimeStatus
-import com.example.urfuandroidpractice.listWithDetails.domain.entity.ImageInfo
+import com.example.urfuandroidpractice.listWithDetails.domain.models.AnimeFullModel
+import com.example.urfuandroidpractice.listWithDetails.domain.models.AnimeGenre
+import com.example.urfuandroidpractice.listWithDetails.domain.models.AnimeKind
+import com.example.urfuandroidpractice.listWithDetails.domain.models.AnimeShortModel
+import com.example.urfuandroidpractice.listWithDetails.domain.models.AnimeStatus
+import com.example.urfuandroidpractice.listWithDetails.domain.models.ImageInfo
 
 object AnimeData {
     val animeShort = listOf(
-        AnimeShortEntity(
+        AnimeShortModel(
             id = 16498,
             name = "Shingeki no Kyojin",
             russian = "Атака Титанов",
@@ -27,7 +27,7 @@ object AnimeData {
             airedOn = "2013-04-07",
             releasedOn = "2013-09-29",
         ),
-        AnimeShortEntity(
+        AnimeShortModel(
             id = 1535,
             name = "Death Note",
             russian = "Тетрадь смерти",
@@ -45,7 +45,7 @@ object AnimeData {
             airedOn = "2006-10-04",
             releasedOn = "2007-06-27"
         ),
-        AnimeShortEntity(
+        AnimeShortModel(
             id = 5114,
             name = "Fullmetal Alchemist: Brotherhood",
             russian = "Стальной алхимик: Братство",
@@ -63,7 +63,7 @@ object AnimeData {
             airedOn = "2009-04-05",
             releasedOn = "2010-07-04"
         ),
-        AnimeShortEntity(
+        AnimeShortModel(
             id = 30276,
             name = "One Punch Man",
             russian = "One Punch Man",
@@ -84,7 +84,7 @@ object AnimeData {
     )
 
     val animeFull = listOf(
-        AnimeFullEntity(
+        AnimeFullModel(
             id = 16498,
             name = "Shingeki no Kyojin",
             russian = "Атака Титанов",
@@ -112,7 +112,7 @@ object AnimeData {
                 AnimeGenre(id = 38, name = "Military", russian = "Военное", entryType = "Anime")
             )
         ),
-        AnimeFullEntity(
+        AnimeFullModel(
             id = 1535,
             name = "Death Note",
             russian = "Тетрадь смерти",
@@ -149,7 +149,7 @@ object AnimeData {
                 AnimeGenre(id = 41, name = "Shounen", russian = "Сёнен", entryType = "Anime"),
             )
         ),
-        AnimeFullEntity(
+        AnimeFullModel(
             id = 5114,
             name = "Fullmetal Alchemist: Brotherhood",
             russian = "Стальной алхимик: Братство",
@@ -181,7 +181,7 @@ object AnimeData {
                 AnimeGenre(id = 41, name = "Magic", russian = "Магия", entryType = "Anime"),
                 AnimeGenre(id = 38, name = "Fantasy", russian = "Фэнтези", entryType = "Anime")
             )
-        ), AnimeFullEntity(
+        ), AnimeFullModel(
             id = 30276,
             name = "One Punch Man",
             russian = "One Punch Man",

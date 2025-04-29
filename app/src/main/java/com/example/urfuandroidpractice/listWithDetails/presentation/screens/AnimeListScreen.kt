@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -20,8 +21,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.sharp.Settings
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -34,14 +38,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,7 +57,8 @@ import coil3.compose.AsyncImage
 import com.example.urfuandroidpractice.R
 import com.example.urfuandroidpractice.listWithDetails.data.mappers.DateMapper
 import com.example.urfuandroidpractice.listWithDetails.data.mock.AnimeData
-import com.example.urfuandroidpractice.listWithDetails.domain.entity.AnimeShortEntity
+import com.example.urfuandroidpractice.listWithDetails.domain.models.AnimeShortModel
+import com.example.urfuandroidpractice.listWithDetails.presentation.viewModel.AnimeFavoritesViewModel
 import com.example.urfuandroidpractice.listWithDetails.presentation.viewModel.AnimeListViewModel
 import com.example.urfuandroidpractice.ui.theme.Spacing
 import com.github.terrakok.modo.Screen
@@ -79,7 +82,10 @@ class AnimeListScreen(
         val navigation = LocalStackNavigation.current
 
         val viewModel = koinViewModel<AnimeListViewModel> { parametersOf(navigation) }
+        val favoritesViewModel = koinViewModel<AnimeFavoritesViewModel> { parametersOf(navigation) }
         val state = viewModel.viewState
+
+        val query by state.query.collectAsState(initial = "")
 
         var isDropdownExpanded by remember { mutableStateOf(false) }
 
@@ -92,19 +98,9 @@ class AnimeListScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                TextField(
-                    value = state.query.collectAsState(initial = "").value,
-                    onValueChange = { viewModel.onQueryChanged(it) },
-                    placeholder = { Text("Поиск") },
-                    leadingIcon = {
-                        Icon(
-                            Icons.Default.Search, contentDescription = null
-                        )
-                    },
-                    modifier = Modifier
-                        .clip(MaterialTheme.shapes.extraLarge)
-                        .background(MaterialTheme.colorScheme.surface)
-                        .weight(1f)
+                SearchBar(
+                    query = query,
+                    onQueryChanged = viewModel::onQueryChanged
                 )
 
                 Box {
@@ -167,13 +163,15 @@ class AnimeListScreen(
                 onRefresh = { viewModel.onRefresh() },
             ) {
                 when {
+                    state.isError -> ErrorScreen(state.error ?: "Unknown error")
                     state.isLoading -> LoadingScreen()
                     state.isEmpty -> EmptyList()
                     else -> ListScreenContent(
                         modifier = Modifier.padding(innerPadding),
+                        onItemClick = { viewModel.onItemClicked(it) },
+                        onFavoriteClick = { favoritesViewModel.onFavoriteClick(it) },
                         animeList = state.items,
                         isLoadingMore = state.isLoadingMore,
-                        onItemClick = { viewModel.onItemClicked(it) },
                         onLoadMore = { viewModel.onLoadMore() }
                     )
                 }
@@ -190,6 +188,13 @@ private fun EmptyList() {
 }
 
 @Composable
+private fun ErrorScreen(message: String) {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Text(text = message)
+    }
+}
+
+@Composable
 private fun LoadingScreen() {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text("Loading...")
@@ -197,12 +202,32 @@ private fun LoadingScreen() {
 }
 
 @Composable
+fun SearchBar(
+    query: String,
+    onQueryChanged: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    TextField(
+        value = query,
+        onValueChange = onQueryChanged,
+        placeholder = { Text("Поиск") },
+        leadingIcon = {
+            Icon(Icons.Default.Search, contentDescription = null)
+        },
+        modifier = modifier
+            .clip(MaterialTheme.shapes.extraLarge)
+            .background(MaterialTheme.colorScheme.surface)
+    )
+}
+
+@Composable
 private fun ListScreenContent(
     modifier: Modifier = Modifier,
-    animeList: List<AnimeShortEntity>,
+    animeList: List<AnimeShortModel>,
     isLoadingMore: Boolean = false,
     onItemClick: (id: Int) -> Unit,
-    onLoadMore: () -> Unit
+    onLoadMore: () -> Unit,
+    onFavoriteClick: (anime: AnimeShortModel) -> Unit,
 ) {
     val listState = rememberSaveable(saver = LazyListState.Saver) {
         LazyListState()
@@ -214,30 +239,44 @@ private fun ListScreenContent(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        items(animeList) {
+        items(animeList) { anime ->
             AnimeListItem(
-                anime = it, onClick = onItemClick
+                anime = anime,
+                onClick = onItemClick,
+                onFavoriteClick = onFavoriteClick,
             )
         }
-    }
 
-    LaunchedEffect(listState) {
-        snapshotFlow { listState.layoutInfo.visibleItemsInfo }
-            .collect { visibleItems ->
-                if (visibleItems.isNotEmpty() && isLoadingMore.not()) {
-                    val lastVisibleItem = visibleItems.last()
-                    val totalItems = listState.layoutInfo.totalItemsCount
-                    if (lastVisibleItem.index >= totalItems - 1) {
-                        onLoadMore()
-                    }
+        item {
+            Spacer(Modifier.height(8.dp))
+            if (isLoadingMore) {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .size(24.dp)
+                )
+            } else {
+                Button(
+                    onClick = onLoadMore,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Text("Загрузить еще")
                 }
             }
+            Spacer(Modifier.height(8.dp))
+        }
     }
 }
 
+
 @Composable
-private fun AnimeListItem(
-    anime: AnimeShortEntity, modifier: Modifier = Modifier, onClick: (id: Int) -> Unit
+fun AnimeListItem(
+    anime: AnimeShortModel,
+    modifier: Modifier = Modifier,
+    onClick: (id: Int) -> Unit,
+    onFavoriteClick: (anime: AnimeShortModel) -> Unit = {},
 ) {
 
     val context = LocalContext.current
@@ -275,6 +314,24 @@ private fun AnimeListItem(
 
             Text(
                 text = date, style = MaterialTheme.typography.bodyMedium
+            )
+        }
+
+        Spacer(modifier = Modifier.width(Spacing.medium))
+
+        IconButton(
+            onClick = { onFavoriteClick(anime) },
+            modifier = Modifier
+                .size(24.dp),
+            colors = IconButtonDefaults.iconButtonColors(
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            )
+        ) {
+            Icon(
+                imageVector = Icons.Default.FavoriteBorder,
+                contentDescription = null,
+                modifier = Modifier.size(12.dp)
             )
         }
     }
