@@ -76,6 +76,7 @@ class AnimeFavoritesScreen(
                     anime = anime,
                     onClick = { onItemClick(anime) },
                     onFavoriteClick = { onFavoriteClick(anime) },
+                    isFavorite = true
                 )
             }
         }

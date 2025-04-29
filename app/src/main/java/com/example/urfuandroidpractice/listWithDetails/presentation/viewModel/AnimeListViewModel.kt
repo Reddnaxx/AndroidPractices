@@ -14,9 +14,6 @@ import com.example.urfuandroidpractice.listWithDetails.presentation.state.AnimeL
 import com.github.terrakok.modo.stack.StackNavContainer
 import com.github.terrakok.modo.stack.forward
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 
 class AnimeListViewModel(
@@ -33,20 +30,26 @@ class AnimeListViewModel(
     }
 
     private fun loadAnime() {
+        setLoadingState()
+
         viewModelScope.launch {
-            repository
-                .getList(
+            try {
+                repository.getList(
                     q = mutableState.query.value,
                     page = mutableState.page,
                     genre = mutableState.selectedGenre?.id
-                )
-                .onStart { setLoadingState() }
-                .catch { mutableState.error = it.message }
-                .collectLatest { updateAnimeList(it) }
+                ).let {
+                    updateAnimeList(it)
+                }
+            } catch (e: Exception) {
+                mutableState.error = e.message
+            } finally {
+                mutableState.isLoading = false
+                mutableState.isLoadingMore = false
+            }
         }
     }
 
-    // 4. Навигация и избранное
     fun onItemClicked(id: Int) {
         navigation.forward(AnimeDetailsScreen(id))
     }
@@ -86,8 +89,9 @@ class AnimeListViewModel(
 
     private fun getGenres() {
         viewModelScope.launch {
-            repository.getGenres()
-                .collect { mutableState.genres = it }
+            repository.getGenres().let {
+                mutableState.genres = it
+            }
         }
     }
 

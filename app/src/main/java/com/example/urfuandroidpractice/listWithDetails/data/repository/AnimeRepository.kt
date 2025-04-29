@@ -5,40 +5,25 @@ import com.example.urfuandroidpractice.listWithDetails.domain.models.AnimeFullMo
 import com.example.urfuandroidpractice.listWithDetails.domain.models.AnimeGenre
 import com.example.urfuandroidpractice.listWithDetails.domain.models.AnimeShortModel
 import com.example.urfuandroidpractice.listWithDetails.domain.repository.IAnimeRepository
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.withContext
 
 class AnimeRepository(
     private val service: AnimeApi,
 ) : IAnimeRepository {
 
-    override fun getList(
+    override suspend fun getList(
         q: String,
         page: Int,
         limit: Int,
         genre: Int?
-    ): Flow<List<AnimeShortModel>> = flow {
-        val response = withContext(Dispatchers.IO) {
-            service.getList(query = q, page = page, genreId = genre)
-        }
-        emit(response)
+    ): List<AnimeShortModel> {
+        return service.getList(query = q, page = page, genreId = genre)
     }
 
-    override fun getById(id: Int): Flow<AnimeFullModel?> = flow {
-        val response = withContext(Dispatchers.IO) {
-            service.getDetails(id)
-        }
-        emit(response)
+    override suspend fun getById(id: Int): AnimeFullModel {
+        return service.getDetails(id)
     }
 
-    override fun getGenres(): Flow<List<AnimeGenre>> = flow {
-        val response = withContext(Dispatchers.IO) {
-            service.getGenres()
-        }
-        emit(response.filter {
-            it.entryType == "Anime"
-        })
+    override suspend fun getGenres(): List<AnimeGenre> {
+        return service.getGenres().filter { it.entryType == "Anime" }
     }
 }

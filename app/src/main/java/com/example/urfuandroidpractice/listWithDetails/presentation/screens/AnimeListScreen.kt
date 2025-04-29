@@ -21,9 +21,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.sharp.Settings
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -47,6 +50,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -57,6 +61,7 @@ import coil3.compose.AsyncImage
 import com.example.urfuandroidpractice.R
 import com.example.urfuandroidpractice.listWithDetails.data.mappers.DateMapper
 import com.example.urfuandroidpractice.listWithDetails.data.mock.AnimeData
+import com.example.urfuandroidpractice.listWithDetails.domain.models.AnimeGenre
 import com.example.urfuandroidpractice.listWithDetails.domain.models.AnimeShortModel
 import com.example.urfuandroidpractice.listWithDetails.presentation.viewModel.AnimeFavoritesViewModel
 import com.example.urfuandroidpractice.listWithDetails.presentation.viewModel.AnimeListViewModel
@@ -85,6 +90,8 @@ class AnimeListScreen(
         val favoritesViewModel = koinViewModel<AnimeFavoritesViewModel> { parametersOf(navigation) }
         val state = viewModel.viewState
 
+        val favoriteItems = favoritesViewModel.viewState.favorites
+
         val query by state.query.collectAsState(initial = "")
 
         var isDropdownExpanded by remember { mutableStateOf(false) }
@@ -94,68 +101,23 @@ class AnimeListScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.primary)
-                    .padding(horizontal = Spacing.large, vertical = Spacing.small),
+                    .padding(horizontal = Spacing.large, vertical = Spacing.small)
+                    .padding(top = Spacing.large),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 SearchBar(
                     query = query,
-                    onQueryChanged = viewModel::onQueryChanged
+                    onQueryChanged = { viewModel.onQueryChanged(it) }
                 )
 
-                Box {
-                    IconButton(
-                        onClick = { isDropdownExpanded = !isDropdownExpanded },
-                        modifier = Modifier
-                            .padding(Spacing.small),
-                        colors = IconButtonDefaults.iconButtonColors(
-                            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant
-                        )
-                    ) {
-                        Icon(
-                            imageVector = Icons.Sharp.Settings,
-                            contentDescription = null
-                        )
-                    }
-                    DropdownMenu(
-                        expanded = isDropdownExpanded,
-                        onDismissRequest = { isDropdownExpanded = false },
-                        modifier = Modifier.height(600.dp)
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text("Очистить фильтр") },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Default.Clear,
-                                    contentDescription = ""
-                                )
-                            },
-                            onClick = {
-                                isDropdownExpanded = false
-                                viewModel.onGenreSelected(null)
-                            }
-                        )
-
-                        state.genres.forEach { genre ->
-                            DropdownMenuItem(
-                                text = { Text(genre.russian) },
-                                leadingIcon = {
-                                    if (genre == state.selectedGenre) {
-                                        Icon(
-                                            imageVector = Icons.Default.Check,
-                                            contentDescription = ""
-                                        )
-                                    }
-                                },
-                                onClick = {
-                                    isDropdownExpanded = false
-                                    viewModel.onGenreSelected(genre)
-                                }
-                            )
-                        }
-                    }
-                }
+                FiltersDropdown(
+                    onDropdownToggle = { isDropdownExpanded = !isDropdownExpanded },
+                    genres = state.genres,
+                    selectedGenre = state.selectedGenre,
+                    isDropdownExpanded = isDropdownExpanded,
+                    onGenreSelected = { viewModel.onGenreSelected(it) }
+                )
             }
         }) { innerPadding ->
             PullToRefreshBox(
@@ -172,7 +134,81 @@ class AnimeListScreen(
                         onFavoriteClick = { favoritesViewModel.onFavoriteClick(it) },
                         animeList = state.items,
                         isLoadingMore = state.isLoadingMore,
-                        onLoadMore = { viewModel.onLoadMore() }
+                        onLoadMore = { viewModel.onLoadMore() },
+                        favorites = favoriteItems
+                    )
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun FiltersDropdown(
+        onDropdownToggle: () -> Unit,
+        isDropdownExpanded: Boolean,
+        genres: List<AnimeGenre>,
+        selectedGenre: AnimeGenre?,
+        onGenreSelected: (genre: AnimeGenre?) -> Unit
+    ) {
+        Box {
+            BadgedBox(
+                badge = {
+                    if (selectedGenre != null) {
+                        Badge(
+                            modifier = Modifier.size(8.dp),
+                            containerColor = Color.Red
+                        )
+                    }
+                },
+                modifier = Modifier.padding(Spacing.small)
+            ) {
+                IconButton(
+                    onClick = { onDropdownToggle() },
+                    colors = IconButtonDefaults.iconButtonColors(
+                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Sharp.Settings,
+                        contentDescription = "Настройки"
+                    )
+                }
+            }
+            DropdownMenu(
+                expanded = isDropdownExpanded,
+                onDismissRequest = { onDropdownToggle() },
+                modifier = Modifier.height(600.dp)
+            ) {
+                DropdownMenuItem(
+                    text = { Text("Очистить фильтр") },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Clear,
+                            contentDescription = ""
+                        )
+                    },
+                    onClick = {
+                        onDropdownToggle()
+                        onGenreSelected(null)
+                    }
+                )
+
+                genres.forEach { genre ->
+                    DropdownMenuItem(
+                        text = { Text(genre.russian) },
+                        leadingIcon = {
+                            if (genre == selectedGenre) {
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = ""
+                                )
+                            }
+                        },
+                        onClick = {
+                            onDropdownToggle()
+                            onGenreSelected(genre)
+                        }
                     )
                 }
             }
@@ -197,7 +233,7 @@ private fun ErrorScreen(message: String) {
 @Composable
 private fun LoadingScreen() {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text("Loading...")
+        CircularProgressIndicator()
     }
 }
 
@@ -228,6 +264,7 @@ private fun ListScreenContent(
     onItemClick: (id: Int) -> Unit,
     onLoadMore: () -> Unit,
     onFavoriteClick: (anime: AnimeShortModel) -> Unit,
+    favorites: List<AnimeShortModel>
 ) {
     val listState = rememberSaveable(saver = LazyListState.Saver) {
         LazyListState()
@@ -244,6 +281,7 @@ private fun ListScreenContent(
                 anime = anime,
                 onClick = onItemClick,
                 onFavoriteClick = onFavoriteClick,
+                isFavorite = favorites.any { anime.id == it.id }
             )
         }
 
@@ -277,6 +315,7 @@ fun AnimeListItem(
     modifier: Modifier = Modifier,
     onClick: (id: Int) -> Unit,
     onFavoriteClick: (anime: AnimeShortModel) -> Unit = {},
+    isFavorite: Boolean
 ) {
 
     val context = LocalContext.current
@@ -329,7 +368,7 @@ fun AnimeListItem(
             )
         ) {
             Icon(
-                imageVector = Icons.Default.FavoriteBorder,
+                imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                 contentDescription = null,
                 modifier = Modifier.size(12.dp)
             )
@@ -340,5 +379,5 @@ fun AnimeListItem(
 @Composable
 @Preview(showBackground = true)
 private fun AnimeListItemPreview() {
-    AnimeListItem(anime = AnimeData.animeShort[0], onClick = {})
+    AnimeListItem(anime = AnimeData.animeShort[0], onClick = {}, isFavorite = false)
 }

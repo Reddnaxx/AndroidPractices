@@ -3,17 +3,16 @@ package com.example.urfuandroidpractice.listWithDetails.domain.repository
 import com.example.urfuandroidpractice.listWithDetails.domain.models.AnimeFullModel
 import com.example.urfuandroidpractice.listWithDetails.domain.models.AnimeGenre
 import com.example.urfuandroidpractice.listWithDetails.domain.models.AnimeShortModel
-import kotlinx.coroutines.flow.Flow
 
 interface IAnimeRepository {
-    fun getList(
+    suspend fun getList(
         q: String = "",
         page: Int = 1,
         limit: Int = 50,
         genre: Int? = null
-    ): Flow<List<AnimeShortModel>>
+    ): List<AnimeShortModel>
 
-    fun getById(id: Int): Flow<AnimeFullModel?>
+    suspend fun getById(id: Int): AnimeFullModel?
 
-    fun getGenres(): Flow<List<AnimeGenre>>
+    suspend fun getGenres(): List<AnimeGenre>
 }

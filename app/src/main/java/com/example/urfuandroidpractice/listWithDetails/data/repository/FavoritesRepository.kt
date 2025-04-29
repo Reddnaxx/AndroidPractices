@@ -5,8 +5,6 @@ import com.example.urfuandroidpractice.listWithDetails.data.local.AnimeFavoriteE
 import com.example.urfuandroidpractice.listWithDetails.domain.models.AnimeShortModel
 import com.example.urfuandroidpractice.listWithDetails.domain.models.AnimeStatus
 import com.example.urfuandroidpractice.listWithDetails.domain.repository.IFavoritesRepository
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 class FavoritesRepository(
     private val dao: AnimeFavoriteDao
@@ -31,26 +29,24 @@ class FavoritesRepository(
     }
 
     override suspend fun addToFavorites(anime: AnimeShortModel) {
-        withContext(Dispatchers.IO) {
-            val isFavorite = dao.getFavorites().any { it.id == anime.id }
-            if (isFavorite) {
-                dao.deleteAnime(anime.id)
-            } else {
-                val animeEntity = AnimeFavoriteEntity(
-                    id = anime.id,
-                    name = anime.name,
-                    russian = anime.russian,
-                    image = anime.image,
-                    kind = anime.kind,
-                    score = anime.score,
-                    status = anime.status,
-                    episodes = anime.episodes,
-                    episodesAired = anime.episodesAired,
-                    airedOn = anime.airedOn,
-                    releasedOn = anime.releasedOn
-                )
-                dao.insertAnime(animeEntity)
-            }
+        val isFavorite = dao.getFavorites().any { it.id == anime.id }
+        if (isFavorite) {
+            return dao.deleteAnime(anime.id)
+        } else {
+            val animeEntity = AnimeFavoriteEntity(
+                id = anime.id,
+                name = anime.name,
+                russian = anime.russian,
+                image = anime.image,
+                kind = anime.kind,
+                score = anime.score,
+                status = anime.status,
+                episodes = anime.episodes,
+                episodesAired = anime.episodesAired,
+                airedOn = anime.airedOn,
+                releasedOn = anime.releasedOn
+            )
+            return dao.insertAnime(animeEntity)
         }
     }
 }

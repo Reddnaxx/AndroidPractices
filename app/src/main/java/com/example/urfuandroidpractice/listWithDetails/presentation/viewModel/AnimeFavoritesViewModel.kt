@@ -12,9 +12,6 @@ import com.example.urfuandroidpractice.listWithDetails.presentation.state.AnimeF
 import com.github.terrakok.modo.stack.StackNavContainer
 import com.github.terrakok.modo.stack.forward
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.onCompletion
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -23,7 +20,7 @@ class AnimeFavoritesViewModel(
     private val navigation: StackNavContainer
 ) : ViewModel() {
     private val mutableState = MutableAnimeFavoritesState()
-    val viewState: AnimeFavoritesState = mutableState
+    val viewState = mutableState as AnimeFavoritesState
 
     init {
         loadFavorites()
@@ -31,20 +28,22 @@ class AnimeFavoritesViewModel(
 
     fun loadFavorites() {
         viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                flowOf(repository.getFavorites())
-                    .onStart { mutableState.isRefreshing = true }
-                    .onCompletion { mutableState.isRefreshing = false }
-                    .collect {
-                        mutableState.favorites = it
-                    }
+            mutableState.isRefreshing = true
+
+            val favs = withContext(Dispatchers.IO) {
+                repository.getFavorites()
             }
+
+            mutableState.favorites = favs
+            mutableState.isRefreshing = false
         }
     }
 
     fun onFavoriteClick(item: AnimeShortModel) {
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.addToFavorites(item)
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                repository.addToFavorites(item)
+            }
             loadFavorites()
         }
     }

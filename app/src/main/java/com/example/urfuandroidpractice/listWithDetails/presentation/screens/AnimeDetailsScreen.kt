@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -100,15 +101,24 @@ class AnimeDetailsScreen(
                     .fillMaxSize()
                     .padding(innerPadding)
             ) {
-                state.error?.let {
-                    ErrorScreen(it)
-                } ?: AnimeDetailsContent(
-                    state = state,
-                    onRatingChanged = { viewModel.onRatingChanged(it) },
-                    modifier = Modifier.verticalScroll(ScrollState(0))
-                )
+                when {
+                    state.isError -> ErrorScreen(state.error ?: "Unknown error")
+                    state.isLoading -> LoadingScreen()
+                    else -> AnimeDetailsContent(
+                        state = state,
+                        onRatingChanged = { viewModel.onRatingChanged(it) },
+                        modifier = Modifier.verticalScroll(ScrollState(0))
+                    )
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun LoadingScreen() {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        CircularProgressIndicator()
     }
 }
 
@@ -236,5 +246,6 @@ private fun AnimeDetailsContentPreview() {
         override val isUserScoreVisible: Boolean = true
         override val isLoading: Boolean = false
         override val error: String? = null
+        override val isError: Boolean = false
     }, onRatingChanged = { })
 }

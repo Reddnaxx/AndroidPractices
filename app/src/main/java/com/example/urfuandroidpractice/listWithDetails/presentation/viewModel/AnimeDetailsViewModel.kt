@@ -11,11 +11,6 @@ import com.example.urfuandroidpractice.listWithDetails.domain.repository.IAnimeR
 import com.example.urfuandroidpractice.listWithDetails.presentation.state.AnimeDetailsScreenState
 import com.github.terrakok.modo.stack.StackNavContainer
 import com.github.terrakok.modo.stack.back
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.onCompletion
-import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 
 class AnimeDetailsViewModel(
@@ -31,14 +26,15 @@ class AnimeDetailsViewModel(
     }
 
     private suspend fun loadAnime() {
-        repository.getById(id)
-            .onStart { mutableState.isLoading = true }
-            .onCompletion { mutableState.isLoading = false }
-            .catch { error -> mutableState.error = error.message }
-            .shareIn(viewModelScope, SharingStarted.WhileSubscribed(5000), replay = 1)
-            .collect {
-                mutableState.anime = it
-            }
+        mutableState.isLoading = true
+        try {
+            val animeDetail = repository.getById(id)
+            mutableState.anime = animeDetail
+        } catch (e: Throwable) {
+            mutableState.error = e.message
+        } finally {
+            mutableState.isLoading = false
+        }
     }
 
     fun back() {
@@ -61,5 +57,6 @@ class AnimeDetailsViewModel(
         override val isUserScoreVisible: Boolean get() = userScore != 0f
         override var isLoading: Boolean by mutableStateOf(false)
         override var error: String? by mutableStateOf(null)
+        override val isError: Boolean get() = error.isNullOrEmpty().not()
     }
 }

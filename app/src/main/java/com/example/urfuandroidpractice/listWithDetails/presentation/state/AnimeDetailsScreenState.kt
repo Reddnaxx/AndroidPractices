@@ -8,4 +8,5 @@ interface AnimeDetailsScreenState {
     val isUserScoreVisible: Boolean
     val isLoading: Boolean
     val error: String?
+    val isError: Boolean
 }
