@@ -1,0 +1,11 @@
+<paths>
+    <!-- let us share anything in cache/images -->
+    <cache-path
+        name="cache_images"
+        path="images/" />
+
+    <!-- and anything in Downloads -->
+    <external-path
+        name="downloaded_files"
+        path="Download/" />
+</paths>

@@ -3,6 +3,7 @@ package com.example.urfuandroidpractice.ui.components
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -15,6 +16,7 @@ import androidx.compose.ui.res.stringResource
 import com.example.urfuandroidpractice.R
 import com.example.urfuandroidpractice.listWithDetails.presentation.screens.AnimeFavoritesScreen
 import com.example.urfuandroidpractice.listWithDetails.presentation.screens.AnimeListScreen
+import com.example.urfuandroidpractice.listWithDetails.presentation.screens.ProfileScreen
 import com.github.terrakok.modo.Screen
 
 @Composable
@@ -48,4 +50,5 @@ enum class MainTabs(
 ) {
     LIST(Icons.AutoMirrored.Filled.List, R.string.pages_list, AnimeListScreen()),
     FAVORITES(Icons.Filled.Favorite, R.string.pages_favorites, AnimeFavoritesScreen()),
+    PROFILE(Icons.Filled.AccountCircle, R.string.pages_profile, ProfileScreen()),
 }

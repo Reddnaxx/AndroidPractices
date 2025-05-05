@@ -14,6 +14,7 @@ import com.github.terrakok.modo.Modo.rememberRootScreen
 import com.github.terrakok.modo.stack.StackNavModel
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
