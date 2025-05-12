@@ -1,5 +1,6 @@
 package com.example.urfuandroidpractice.listWithDetails.presentation.screens
 
+import TimePickerField
 import android.Manifest
 import android.graphics.Bitmap
 import android.net.Uri
@@ -64,6 +65,7 @@ import org.koin.core.parameter.parametersOf
 class ProfileEditScreen(
     override val screenKey: ScreenKey = generateScreenKey()
 ) : Screen {
+
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content(modifier: Modifier) {
@@ -71,6 +73,8 @@ class ProfileEditScreen(
 
         val viewModel = koinViewModel<ProfileViewModel> { parametersOf(navigation) }
         val state by viewModel.profile.collectAsState()
+
+        var isValid by remember { mutableStateOf(true) }
 
         var fullName by remember(state.fullName) { mutableStateOf(state.fullName) }
         var resumeUrl by remember(state.resumeUrl) { mutableStateOf(state.resumeUrl) }
@@ -155,7 +159,7 @@ class ProfileEditScreen(
                             Image(
                                 painter = rememberAsyncImagePainter(avatarUri),
                                 contentDescription = "Аватар",
-                                contentScale = ContentScale.Crop,  // обрезаем картинку по кругу
+                                contentScale = ContentScale.Crop,
                                 modifier = Modifier
                                     .fillMaxSize()
                             )
@@ -222,6 +226,18 @@ class ProfileEditScreen(
                         modifier = Modifier.fillMaxWidth(),
                         maxLines = 5
                     )
+                    TimePickerField(
+                        onTimeChange = { h, m ->
+                            viewModel.saveNotificationTime(
+                                context = context,
+                                hour = h,
+                                minute = m
+                            )
+                        },
+                        onValidationChange = {
+                            isValid = it
+                        }
+                    )
 
                     Spacer(Modifier.height(16.dp))
 
@@ -234,9 +250,11 @@ class ProfileEditScreen(
                                     resumeUrl = resumeUrl,
                                 )
                             )
+                            viewModel.scheduleNotification(context = context)
                             navigation.back()
                         },
-                        modifier = Modifier.align(Alignment.End)
+                        modifier = Modifier.align(Alignment.End),
+                        enabled = isValid
                     ) {
                         Text("Готово")
                     }

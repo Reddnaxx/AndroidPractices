@@ -57,8 +57,7 @@ class ProfileScreen(
 
         val viewModel = koinViewModel<ProfileViewModel> { parametersOf(navigation) }
         val state by viewModel.profile.collectAsState()
-
-        // Scaffold with TopAppBar
+        
         Scaffold(
             topBar = {
                 TopAppBar(
