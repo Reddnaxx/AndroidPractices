@@ -1,0 +1,5 @@
+<resources>
+    <string name="pages_favorites">Избранное</string>
+    <string name="pages_list">Список</string>
+    <string name="pages_profile">Профиль</string>
+</resources>

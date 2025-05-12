@@ -21,4 +21,10 @@ dependencyResolutionManagement {
 
 rootProject.name = "UrFU Android Practice"
 include(":app")
- 
+include(":core:network")
+include(":core:local")
+include(":core:utils")
+include(":core:theme")
+include(":feature:profile")
+include(":feature:anime")
+include(":feature:navigation")

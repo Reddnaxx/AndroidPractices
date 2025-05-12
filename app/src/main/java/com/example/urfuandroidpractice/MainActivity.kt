@@ -7,9 +7,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import com.example.urfuandroidpractice.listWithDetails.presentation.screens.AnimeListScreen
-import com.example.urfuandroidpractice.listWithDetails.presentation.screens.LayoutScreen
-import com.example.urfuandroidpractice.ui.theme.UrFUAndroidPracticeTheme
+import com.example.anime.presentation.screens.AnimeListScreen
+import com.example.navigation.presentation.screens.LayoutScreen
 import com.github.terrakok.modo.Modo.rememberRootScreen
 import com.github.terrakok.modo.stack.StackNavModel
 
@@ -25,7 +24,7 @@ class MainActivity : ComponentActivity() {
                 )
             }
 
-            UrFUAndroidPracticeTheme {
+            com.example.theme.UrFUAndroidPracticeTheme {
                 Surface {
                     rootScreen.Content(
                         modifier = Modifier.fillMaxSize()
